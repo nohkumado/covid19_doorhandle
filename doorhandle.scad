@@ -6,11 +6,6 @@ DIN965  = 2; //Phillips-Kreuzschlitz PH, DIN 965 (austauschbar mit ISO 7046) Tec
 DIN912 = 3; // zylinder Kopf Schrauben
 
 
-//translate([-30,0,0]) rotate([90,0,0])rotate([0,0,90])import ("../Doorhandle.STL");
-
-//metrische_mutter_schablone(4,0,  0.1);
-//DIN7991
-//translate ([12,00,0])metrische_schraube_schablone(typ = 0 , mass= 5,laenge = 30, toleranz = 0.1);
 //
 width = 60;
 size = 120;
@@ -26,9 +21,34 @@ rotate([0,20,0])
   armlever(w= width, size=size, thick=thick);
 difference()
 {
+  union()
+  {
   knob(knobdia+2*thick+2*luft, knoblen/2,knobrad);
-  knob(knobdia+luft, knoblen+2,knobrad);
+translate([0,0,-knobdia])
+cube([4*thick,knoblen/2,0.8*knobdia],center = true);
 }
+  union()
+  {
+    knob(knobdia+luft, knoblen+2,knobrad);
+    color("red")
+    translate([-1,0,-knobdia/2])
+      cube([1,knoblen+2,2*knobdia+2*thick+4*luft],center = true);
+translate([thick+1,knoblen/8,-knobdia])
+rotate([0,90,0])
+metrische_mutter_schablone(4,30,  0.1);
+translate([thick+1,-knoblen/8,-knobdia])
+rotate([0,90,0])
+metrische_mutter_schablone(4,30,  0.1);
+translate([-2*thick-.1,knoblen/8,-knobdia])
+rotate([0,90,0])
+metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
+translate([-2*thick-.1,-knoblen/8,-knobdia])
+rotate([0,90,0])
+metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
+
+  }
+}
+
 
 
 
