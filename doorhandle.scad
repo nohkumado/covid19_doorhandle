@@ -12,16 +12,19 @@ width = 60;
 size = 120;
 thick = 4;
 knobdia = 22.3;
-knobrad = 18.54;
 knoblen = 135;
 luft = 1;
 hub = 2.915;
+//hub = 0;
 
-beta = atan(knoblen/(2*hub));
-alpha = 4*(90-atan(knoblen/(2*hub)));
-radius = knoblen /(2*sin(alpha));
-//echo("rad = ",radius, " beta = ",beta, " alpha = ",alpha);
 
+//beta = atan(knoblen/(2*hub));
+alpha = (hub ==0) ? 0 : 4*(90-atan(knoblen/(2*hub)));
+//radius = knoblen /(2*sin(alpha));
+knobrad = radFromHub(knoblen,hub);
+//echo("rad = ",radius, "knobrad = ",knobrad, " beta = ",beta, " alpha = ",alpha);
+
+function radFromHub(sehne,hub) = (hub==0) ? 0 : (sehne /(2*sin(4*(90-atan(sehne/(2*hub))))));
 
 
 
@@ -77,7 +80,6 @@ module doorknob(lever = true, clear = 0.5)
   {
     union()
     {
-      //knob(knobdia+2*thick+2*luft, knoblen/2,knobrad);
       knob(knobdia+2*thick+2*luft, width,knobrad);
       translate([0,0,-knobdia])
         cube([4*thick,width,0.8*knobdia],center = true);
@@ -175,10 +177,10 @@ module knob(knobdia, len, knobrad)
 else
   {
 rotate([0,-90,0])
-translate([-radius,0,0])
+translate([-knobrad,0,0])
 rotate([0,0,-alpha/2])
 rotate_extrude(angle=alpha)
-translate([radius,0,0])
+translate([knobrad,0,0])
 circle(d=knobdia);
   }
 
