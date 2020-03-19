@@ -1,4 +1,5 @@
 use <muttern934.scad>
+$fn = 150;
 //import("muttern934.scad");
 DIN7991 = 0;
 ISO10642 = 1;
@@ -15,43 +16,101 @@ knobrad = 0;
 knoblen = 130.5;
 luft = 1;
 
-
-  translate([2*thick,0,(knobdia+thick)/2])
-rotate([0,20,0])
-  armlever(w= width, size=size, thick=thick);
 difference()
 {
   union()
   {
-  knob(knobdia+2*thick+2*luft, knoblen/2,knobrad);
-translate([0,0,-knobdia])
-cube([4*thick,knoblen/2,0.8*knobdia],center = true);
-}
+    doorknob(lever = true);
+
+    difference()
+    {
+      union()
+      {
+        doorknob(lever = false);
+
+        translate([2*thick-2,0,(knobdia+thick)/2])
+          rotate([0,20,0])
+          armlever(w= width*.6, size=size, thick=thick, angle=20);
+
+        ecken = [
+          [0,0],
+          [0,knobdia/2],
+          [knobdia/1,knobdia/4],
+        ];
+          translate([4,0,knobdia+thick])
+            rotate([0,-210,0])
+            rotate([90,0,0])
+            linear_extrude(height = 0.85*width, center = true, convexity = 10, scale=1.0)
+            polygon(ecken);
+      }
+      scale([1.1,1.1,1.1])doorknob(lever = true);
+    }
+  }
+
+
   union()
   {
-    knob(knobdia+luft, knoblen+2,knobrad);
-    color("red")
-    translate([-1,0,-knobdia/2])
-      cube([1,knoblen+2,2*knobdia+2*thick+4*luft],center = true);
-translate([thick+1,knoblen/8,-knobdia])
-rotate([0,90,0])
-metrische_mutter_schablone(4,30,  0.1);
-translate([thick+1,-knoblen/8,-knobdia])
-rotate([0,90,0])
-metrische_mutter_schablone(4,30,  0.1);
-translate([-2*thick-.1,knoblen/8,-knobdia])
-rotate([0,90,0])
-metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
-translate([-2*thick-.1,-knoblen/8,-knobdia])
-rotate([0,90,0])
-metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
-
+    translate([3.7*thick+.1,-knoblen/11,+1.7*knobdia])
+      rotate([0,-78,0])
+      metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
+    translate([3.7*thick+.1,knoblen/11,+1.7*knobdia])
+      rotate([0,-78,0])
+      metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
+    translate([3.7*thick+.1-2.0*thick,-knoblen/11,+1.75*knobdia])
+      rotate([0,-78,0])
+      metrische_mutter_schablone(4,30,  0.1, ueberlaenge=true);
+    translate([3.7*thick+.1-2.0*thick,knoblen/11,+1.75*knobdia])
+      rotate([0,-78,0])
+      metrische_mutter_schablone(4,30,  0.1, ueberlaenge=true);
   }
+
 }
 
+module doorknob(lever = true)
+{
+  translate([2*thick,0,(knobdia+thick)/2])
+    rotate([0,20,0])
+    armlever(w= width, size=size, thick=thick);
+  difference()
+  {
+    union()
+    {
+      //knob(knobdia+2*thick+2*luft, knoblen/2,knobrad);
+      knob(knobdia+2*thick+2*luft, width,knobrad);
+      translate([0,0,-knobdia])
+        cube([4*thick,width,0.8*knobdia],center = true);
+        //cube([4*thick,knoblen/2,0.8*knobdia],center = true);
+    }
+    union()
+    {
+      knob(knobdia+luft, knoblen+2,knobrad);
+      color("red")
+        if(lever)
+        {
+          translate([-0.75*knobdia+0.5,0,0])
+            cube([1.5*knobdia,knoblen+2,2*size],center = true);
+        }
+        else
+        {
+          translate([0.75*knobdia-0.5,0,0])
+            cube([1.5*knobdia,knoblen+2,2*size],center = true);
+        }
+      translate([-2*thick-.1,knoblen/8,-knobdia])
+        rotate([0,90,0])
+        metrische_mutter_schablone(4,30,  0.1);
+      translate([-2*thick-1,-knoblen/8,-knobdia])
+        rotate([0,90,0])
+        metrische_mutter_schablone(4,30,  0.1);
+      translate([2*thick+.1,knoblen/8,-knobdia])
+        rotate([0,-90,0])
+        metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
+      translate([2*thick+.1,-knoblen/8,-knobdia])
+        rotate([0,-90,0])
+        metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
 
-
-
+    }
+  }
+}
 
 
 
