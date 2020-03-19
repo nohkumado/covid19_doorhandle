@@ -155,7 +155,7 @@ module metrische_mutter_schablone(mass,startw = 30, toleranz = 0, ueberlaenge = 
   winkel = 360/6;		// 6 Ecken
 
   data = masse[search(mass, masse, num_returns_per_match=0, index_col_num=0)[0]];
-  echo("benutze Daten ",data);
+  //echo("benutze Daten ",data);
 
   sechseck= [for(i = [1 : 6]) [
     (data[2]+toleranz)*cos(i*winkel+startw), (data[2]+toleranz)*sin(i*winkel+startw)] ];

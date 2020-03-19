@@ -12,16 +12,25 @@ width = 60;
 size = 120;
 thick = 4;
 knobdia = 22.3;
-knobrad = 0;
-knoblen = 130.5;
+knobrad = 18.54;
+knoblen = 135;
 luft = 1;
+hub = 2.915;
+
+beta = atan(knoblen/(2*hub));
+alpha = 4*(90-atan(knoblen/(2*hub)));
+radius = knoblen /(2*sin(alpha));
+//echo("rad = ",radius, " beta = ",beta, " alpha = ",alpha);
+
+
+
 
 union()
 {
  //lever side
  union()
  {
-   doorknob(lever = true);
+   doorknob(lever = true, clear = 1);
    translate([5,0,1.5*knobdia]) outerHinge(dia=12, w=0.9*width);
  }
 
@@ -30,7 +39,7 @@ union()
   {
     union()
     {
-      doorknob(lever = false);
+      doorknob(lever = false, clear = 1);
 
       translate([2*thick-2,0,(knobdia+thick)/2])
         rotate([0,20,0])
@@ -51,7 +60,7 @@ union()
     scale([1.1,1.1,1.1])
       union()
       {
-        doorknob(lever = true);
+        doorknob(lever = true, clear = 0);
         translate([5,0,1.5*knobdia]) outerHinge(dia=12, w=0.9*width);
       }
   }
@@ -59,7 +68,7 @@ union()
 
 
 
-module doorknob(lever = true)
+module doorknob(lever = true, clear = 0.5)
 {
   translate([2*thick,0,(knobdia+thick)/2])
     rotate([0,20,0])
@@ -77,15 +86,14 @@ module doorknob(lever = true)
     union()
     {
       knob(knobdia+luft, knoblen+2,knobrad);
-      color("red")
         if(lever)
         {
-          translate([-0.75*knobdia+0.5,0,0])
+          translate([-0.75*knobdia+clear,0,0])
             cube([1.5*knobdia,knoblen+2,2*size],center = true);
         }
         else
         {
-          translate([0.75*knobdia-0.5,0,0])
+          translate([0.75*knobdia-clear,0,0])
             cube([1.5*knobdia,knoblen+2,2*size],center = true);
         }
       translate([-2*thick-.1,knoblen/8,-knobdia])
@@ -164,6 +172,16 @@ module knob(knobdia, len, knobrad)
       rotate([90,0,0])
       cylinder(d=knobdia, h=len);
   }
+else
+  {
+rotate([0,-90,0])
+translate([-radius,0,0])
+rotate([0,0,-alpha/2])
+rotate_extrude(angle=alpha)
+translate([radius,0,0])
+circle(d=knobdia);
+  }
+
 
 }
 
