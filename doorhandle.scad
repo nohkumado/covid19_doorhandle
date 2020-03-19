@@ -16,55 +16,48 @@ knobrad = 0;
 knoblen = 130.5;
 luft = 1;
 
-difference()
+union()
 {
-  union()
-  {
-    doorknob(lever = true);
+ //lever side
+ union()
+ {
+   doorknob(lever = true);
+   translate([5,0,1.5*knobdia]) outerHinge(dia=12, w=0.9*width);
+ }
 
-    difference()
+  //handle side
+  difference()
+  {
+    union()
     {
+      doorknob(lever = false);
+
+      translate([2*thick-2,0,(knobdia+thick)/2])
+        rotate([0,20,0])
+        armlever(w= width*.6, size=size, thick=thick, angle=20);
+
+      ecken = [
+        [0,0],
+        [0,knobdia/2],
+        [knobdia*1.0,knobdia/4],
+      ];
+        translate([2,0,knobdia+2*thick+2])
+          rotate([0,-230,0])
+          rotate([90,0,0])
+          linear_extrude(height = 0.85*width, center = true, convexity = 10, scale=1.0)
+          polygon(ecken);
+        translate([5,0,1.5*knobdia]) innerHinge(dia=12, w=0.9*width);
+    }
+    scale([1.1,1.1,1.1])
       union()
       {
-        doorknob(lever = false);
-
-        translate([2*thick-2,0,(knobdia+thick)/2])
-          rotate([0,20,0])
-          armlever(w= width*.6, size=size, thick=thick, angle=20);
-
-        ecken = [
-          [0,0],
-          [0,knobdia/2],
-          [knobdia/1,knobdia/4],
-        ];
-          translate([4,0,knobdia+thick])
-            rotate([0,-210,0])
-            rotate([90,0,0])
-            linear_extrude(height = 0.85*width, center = true, convexity = 10, scale=1.0)
-            polygon(ecken);
+        doorknob(lever = true);
+        translate([5,0,1.5*knobdia]) outerHinge(dia=12, w=0.9*width);
       }
-      scale([1.1,1.1,1.1])doorknob(lever = true);
-    }
   }
-
-
-  union()
-  {
-    translate([3.7*thick+.1,-knoblen/11,+1.7*knobdia])
-      rotate([0,-78,0])
-      metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
-    translate([3.7*thick+.1,knoblen/11,+1.7*knobdia])
-      rotate([0,-78,0])
-      metrische_schraube_schablone(typ = DIN7991 , mass= 5,laenge = 30, toleranz = 0.1);
-    translate([3.7*thick+.1-2.0*thick,-knoblen/11,+1.75*knobdia])
-      rotate([0,-78,0])
-      metrische_mutter_schablone(4,30,  0.1, ueberlaenge=true);
-    translate([3.7*thick+.1-2.0*thick,knoblen/11,+1.75*knobdia])
-      rotate([0,-78,0])
-      metrische_mutter_schablone(4,30,  0.1, ueberlaenge=true);
-  }
-
 }
+
+
 
 module doorknob(lever = true)
 {
@@ -79,7 +72,7 @@ module doorknob(lever = true)
       knob(knobdia+2*thick+2*luft, width,knobrad);
       translate([0,0,-knobdia])
         cube([4*thick,width,0.8*knobdia],center = true);
-        //cube([4*thick,knoblen/2,0.8*knobdia],center = true);
+      //cube([4*thick,knoblen/2,0.8*knobdia],center = true);
     }
     union()
     {
@@ -170,6 +163,47 @@ module knob(knobdia, len, knobrad)
     translate([0,len/2,0])
       rotate([90,0,0])
       cylinder(d=knobdia, h=len);
+  }
+
+}
+
+module hinge(dia = 12,w = 10)
+{
+
+  //outer shell
+  // translate([0,w/2,0])
+  // rotate([90,0,0])
+  //  cylinder(d=dia, h=w);
+  //inner shell
+  outerHinge(dia = dia,w = w);
+  innerHinge(dia = dia,w = w);
+
+}
+
+module outerHinge(dia = 12,w = 10)
+{
+
+  difference()
+  {
+    translate([0,w/2,0])
+      rotate([90,0,0])
+      cylinder(d=dia, h=w);
+    scale([1.05,1.05,1.05])innerHinge(dia = dia,w = w);
+  }
+
+}
+module innerHinge(dia = 12,w = 10)
+{
+
+  difference()
+  {
+    color("red")
+      translate([0,w/4,0])
+      rotate([90,0,0])
+      cylinder(d=dia+.1, h=w/2);
+    translate([0,w/4+1,0])
+      rotate([90,0,0])
+      cylinder(d=dia/2, h=w/2+2);
   }
 
 }
