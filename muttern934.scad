@@ -158,7 +158,8 @@ module metrische_mutter_schablone(mass,startw = 30, toleranz = 0, ueberlaenge = 
   //echo("benutze Daten ",data);
 
   sechseck= [for(i = [1 : 6]) [
-    (data[2]+toleranz)*cos(i*winkel+startw), (data[2]+toleranz)*sin(i*winkel+startw)] ];
+    (data[0]+toleranz)*cos(i*winkel+startw), (data[0]+toleranz)*sin(i*winkel+startw)] ];
+    //(data[2]+toleranz)*cos(i*winkel+startw), (data[2]+toleranz)*sin(i*winkel+startw)] ];
   if(ueberlaenge)
   {
     linear_extrude(height = 2*data[1]+2*toleranz) polygon(sechseck);
