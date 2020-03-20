@@ -8,16 +8,18 @@ DIN912 = 3; // zylinder Kopf Schrauben
 
 
 //
-width = 60;
+width = 50;
 size = 120;
 thick = 4;
-knobdia = 22.3;
+knobdia = 19;
 knoblen = 135;
 luft = 1;
 hub = 2.915;
 //hub = 0;
 
 
+echo("alpha=",(size*360)/(2*PI*5*width));
+echo("sehne=",(asin(size/(2*5*width))));
 //beta = atan(knoblen/(2*hub));
 alpha = (hub ==0) ? 0 : 4*(90-atan(knoblen/(2*hub)));
 //radius = knoblen /(2*sin(alpha));
@@ -35,6 +37,8 @@ function radFromHub(sehne,hub) = (hub==0) ? 0 : (sehne /(2*sin(4*(90-atan(sehne/
 //translate([-6,0,0])
 //rotate([0,20,0])
     doorknob(lever = false, clear = 1);
+//   beta =(size*360)/(2*PI*5*width);
+//         armlever(w= width, thick=thick, angle=beta);
 
 module doorknob(lever = true, clear = 0.5)
 {
@@ -46,18 +50,21 @@ module doorknob(lever = true, clear = 0.5)
   {
     union()
     {
+    beta =(size*360)/(2*PI*5*width);
       if(lever)
       {
-        translate([2*thick+2,0,(knobdia+thick)/2])
-          rotate([0,14,0])
-          armlever(w= width, size=size, thick=thick);
+    //beta =asin(size/(2*5*width));
+        //translate([2*thick+2,0,(knobdia+thick)/2])
+        translate([thick+2,0,(knobdia+thick)/2])
+          rotate([0,-10,180])
+          armlever(w= width, thick=thick, angle=beta);
         translate([rhx,0,rhz*knobdia]) outerHinge(dia=12, w=0.9*width);
       }
       else
       {
-        translate([2*thick-10.5,0,(knobdia+thick)/2-1.9])
-          rotate([0,18,0])
-          armlever(w= width*.6, size=size, thick=thick, angle=20);
+        translate([-thick,0,(knobdia+thick)/2-1])
+          rotate([0,22,0])
+          armlever(w= width*.6, thick=thick, angle=beta/3);
         translate([lhx,0,lhz*knobdia]) innerHinge(dia=12, w=0.9*width);
       }
       difference()
@@ -113,7 +120,7 @@ color("magenta")
 
 
 
-module armlever(w, size, thick, angle = 40)
+module armlever(w, thick, angle = 40)
 {
   width = w/2;
   rund = width*.2;
@@ -121,27 +128,28 @@ module armlever(w, size, thick, angle = 40)
     [
     [0,0],
     [width-rund,0],
-    [width,rund],
-    [width-thick,rund+thick],
-    [width-thick-rund,thick],
-    [0,thick]
+    [width,-rund],
+    [width-thick,-rund-thick],
+    [width-thick-rund,-thick],
+    [0,-thick]
     ];
     cappoints = 
       [
-      [0,0],
-      [width-rund,0],
-      [width,rund],
-      [width-thick,rund+thick],
-      [0,thick+thick]
+    [0,0],
+    [width-rund,0],
+    [width,-rund],
+    [width-thick,-rund-thick],
+    [width-thick-rund,-rund-thick],
+    [0,-rund-thick]
       ];
 
       rotate([-90,0,0])
-        translate([-5*width,0,0])
+        translate([-5*width-thick,0,0])
         rotate([0,0,-angle])
         translate([5*width,0,0])
         {
           translate([-5*width,0,0])
-            rotate_extrude(angle=angle, convexity = 30,$fn=100)
+            rotate_extrude(angle=angle, convexity = 30,$fn=200)
             {
               translate([5*width,0,0])
                 rotate([0,0,90])
@@ -151,8 +159,8 @@ module armlever(w, size, thick, angle = 40)
                 }
             }
 
-          translate([-5,0,0])
-            rotate([0,90,-5])
+          translate([0,-thick,0])
+            rotate([90,-90,-0])
             linear_extrude(height = 10, center = true, convexity = 10, scale=0.8)
             {
               polygon(cappoints);
