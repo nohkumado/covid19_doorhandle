@@ -8,18 +8,18 @@ DIN912 = 3; // zylinder Kopf Schrauben
 
 
 //
-width = 50;
-size = 120;
-thick = 4;
-knobdia = 19;
-knoblen = 135;
-luft = 1;
-hub = 2.915;
+width = 50; //the width of the rest
+size = 120; // the height of the thing
+thick = 4;  //the thickness, solidity of the knob enclosure
+knobdia = 19; //the diameter of the knob
+knoblen = 135; // the length of the knob (needed especially for courved knobs
+luft = 1;     // spacing between the jaws of the thing
+hub = 2.915;  // the mesure of the deviation from the straight line (together with the length its possible to compute the radius of the knb arc
 //hub = 0;
 
 
-echo("alpha=",(size*360)/(2*PI*5*width));
-echo("sehne=",(asin(size/(2*5*width))));
+//echo("alpha=",(size*360)/(2*PI*5*width));
+//echo("sehne=",(asin(size/(2*5*width))));
 //beta = atan(knoblen/(2*hub));
 alpha = (hub ==0) ? 0 : 4*(90-atan(knoblen/(2*hub)));
 //radius = knoblen /(2*sin(alpha));
@@ -29,16 +29,36 @@ knobrad = radFromHub(knoblen,hub);
 function radFromHub(sehne,hub) = (hub==0) ? 0 : (sehne /(2*sin(4*(90-atan(sehne/(2*hub))))));
 
 
-
 //lever side
     doorknob(lever = true, clear = 1);
 
 //handle side
-//translate([-6,0,0])
-//rotate([0,20,0])
     doorknob(lever = false, clear = 1);
-//   beta =(size*360)/(2*PI*5*width);
-//         armlever(w= width, thick=thick, angle=beta);
+
+/*
+ knob,
+ if you have a special shape, add it here!
+*/
+module knob(knobdia, len, knobrad)
+{
+  if(knobrad == 0)
+  {
+    translate([0,len/2,0])
+      rotate([90,0,0])
+      cylinder(d=knobdia, h=len);
+  }
+  else
+  {
+    rotate([0,-70,0])//change here 90 for perfecly vertical, 90-20, to have enough space to go trough with the arm
+      translate([-knobrad,0,0])
+      rotate([0,0,-alpha/2])
+      rotate_extrude(angle=alpha)
+      translate([knobrad,0,0])
+      circle(d=knobdia);
+  }
+
+
+}
 
 module doorknob(lever = true, clear = 0.5)
 {
@@ -89,16 +109,16 @@ module doorknob(lever = true, clear = 0.5)
             translate([0.75*knobdia-clear,0,0])
               cube([1.5*knobdia,knoblen+2,2*size],center = true);
           }
-          translate([-2*thick-.1,knoblen/8,-knobdia])
+          translate([2*thick-.1,knoblen/8,-knobdia])
             rotate([0,90,0])
             metrische_mutter_schablone(4,30,  0.1);
-          translate([-2*thick-1,-knoblen/8,-knobdia])
+          translate([2*thick-1,-knoblen/8,-knobdia])
             rotate([0,90,0])
             metrische_mutter_schablone(4,30,  0.1);
-          translate([2*thick+2,knoblen/8,-knobdia])
+          translate([-2*thick+2,knoblen/8,-knobdia])
             rotate([0,-90,0])
             metrische_schraube_schablone(typ = DIN7991 , mass= 4,laenge = 30, toleranz = 0.1);
-          translate([2*thick+2,-knoblen/8,-knobdia])
+          translate([-2*thick+2,-knoblen/8,-knobdia])
             rotate([0,-90,0])
             metrische_schraube_schablone(typ = DIN7991 , mass= 4,laenge = 30, toleranz = 0.1);
 
@@ -170,26 +190,6 @@ module armlever(w, thick, angle = 40)
 }
 
 
-module knob(knobdia, len, knobrad)
-{
-  if(knobrad == 0)
-  {
-    translate([0,len/2,0])
-      rotate([90,0,0])
-      cylinder(d=knobdia, h=len);
-  }
-  else
-  {
-    rotate([0,-90,0])
-      translate([-knobrad,0,0])
-      rotate([0,0,-alpha/2])
-      rotate_extrude(angle=alpha)
-      translate([knobrad,0,0])
-      circle(d=knobdia);
-  }
-
-
-}
 
 module hinge(dia = 12,w = 10)
 {
