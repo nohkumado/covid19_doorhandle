@@ -15,6 +15,7 @@ DIN7991 = 0;
 ISO10642 = 1;
 DIN965  = 2; //Phillips-Kreuzschlitz PH, DIN 965 (austauschbar mit ISO 7046) Technische Daten für DIN 965 
 DIN912 = 3; // zylinder Kopf Schrauben
+DIN933 = 4; //sechskantkopf
 
 
 //name dicke zangenbreite
@@ -146,10 +147,29 @@ schrauben =
     [42	 	,63.0,63.0,42.0],
     [48	 	,72.0,72.0,48.0],
     [56	 	,84.0,84.0,56.0]
+    ],
+    //Sechskantschrauben DIN 933
+    [
+      [2, 4, 4, 1.4],
+      [3, 5.5, 5.5, 2],
+      [4, 7, 7, 2.8],
+      [5, 8, 8, 3.5],
+      [6, 10, 10, 4],
+      [7, 11, 11, 4.8],
+      [8, 13, 13, 5.3],
+      [10, 17, 17, 6.4],
+      [12, 19, 19, 7.5],
+      [14, 22, 22, 8.8],
+      [16, 24, 24, 10],
+      [18, 27, 27, 11.5],
+      [20, 30, 30, 12.5],
+      [22, 32, 32, 14]
     ]
     ];
 
 
+//name dicke zangenbreite
+function  mmuttermass(mass)= masse[search(mass, masse, num_returns_per_match=0, index_col_num=0)[0]];
 module metrische_mutter_schablone(mass,startw = 30, toleranz = 0, ueberlaenge = false)
 {
   winkel = 360/6;		// 6 Ecken
@@ -159,7 +179,7 @@ module metrische_mutter_schablone(mass,startw = 30, toleranz = 0, ueberlaenge = 
 
   sechseck= [for(i = [1 : 6]) [
     (data[0]+toleranz)*cos(i*winkel+startw), (data[0]+toleranz)*sin(i*winkel+startw)] ];
-    //(data[2]+toleranz)*cos(i*winkel+startw), (data[2]+toleranz)*sin(i*winkel+startw)] ];
+  //(data[2]+toleranz)*cos(i*winkel+startw), (data[2]+toleranz)*sin(i*winkel+startw)] ];
   if(ueberlaenge)
   {
     linear_extrude(height = 2*data[1]+2*toleranz) polygon(sechseck);
@@ -169,13 +189,20 @@ module metrische_mutter_schablone(mass,startw = 30, toleranz = 0, ueberlaenge = 
     linear_extrude(height = data[1]+2*toleranz) polygon(sechseck);
   }
 }
+  // M  ∅ Senkloch,∅ Durchgang, min. Senk-Tiefe
+function  mschraubmass(typ,mass)= schrauben[typ][search(mass, schrauben[typ], num_returns_per_match=0, index_col_num=0)[0]];
 module metrische_schraube_schablone(typ, mass,laenge = 30, toleranz = 0)
 {
   $fn = 100;
-  //echo("schraube mit : ",typ,mass,laenge,toleranz);
-  //echo("satz ",search(mass, schrauben[typ], num_returns_per_match=0, index_col_num=0));
   data = schrauben[typ][search(mass, schrauben[typ], num_returns_per_match=0, index_col_num=0)[0]];
-  //echo("benutze Daten ",data);
-  cylinder(d1=data[1]+toleranz, d2=data[2]+toleranz, h= 2*data[3]);
+  if(typ == DIN933)
+  {
+    metrische_mutter_schablone(mass=data[0], startw = 30, toleranz = toleranz, ueberlaenge = false);
+  }
+  else
+  {
+    cylinder(d1=data[1]+toleranz, d2=data[2]+toleranz, h= 2*data[3]);
+  }
+
   translate([0,0,data[3]]) cylinder(d=data[0]+toleranz, h= laenge);
 }

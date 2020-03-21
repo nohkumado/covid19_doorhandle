@@ -5,6 +5,7 @@ DIN7991 = 0;
 ISO10642 = 1;
 DIN965  = 2; //Phillips-Kreuzschlitz PH, DIN 965 (austauschbar mit ISO 7046) Technische Daten für DIN 965 
 DIN912 = 3; // zylinder Kopf Schrauben
+DIN933 = 4; //sechskantkopf
 
 
 //
@@ -15,7 +16,11 @@ knobdia = 19; //the diameter of the knob
 knoblen = 135; // the length of the knob (needed especially for courved knobs
 luft = 1;     // spacing between the jaws of the thing
 hub = 2.915;  // the mesure of the deviation from the straight line (together with the length its possible to compute the radius of the knb arc
-//hub = 0;
+//hub = 0;//straight knob
+screwonleft = true;
+screwsize = 6;
+screwtype = DIN933;
+nuttype = "none";//hex gives a hex nut cut, everything else nothing
 
 
 //echo("alpha=",(size*360)/(2*PI*5*width));
@@ -30,15 +35,15 @@ function radFromHub(sehne,hub) = (hub==0) ? 0 : (sehne /(2*sin(4*(90-atan(sehne/
 
 
 //lever side
-    doorknob(lever = true, clear = 1);
+doorknob(lever = true, clear = 1,hexonleft = screwonleft, metrisch=screwsize,styp = screwtype, ntyp = nuttype);
 
 //handle side
-    doorknob(lever = false, clear = 1);
+doorknob(lever = false, clear = 1,hexonleft = screwonleft, metrisch=screwsize,styp = screwtype, ntyp = nuttype);
 
 /*
- knob,
- if you have a special shape, add it here!
-*/
+   knob,
+   if you have a special shape, add it here!
+ */
 module knob(knobdia, len, knobrad)
 {
   if(knobrad == 0)
@@ -60,7 +65,7 @@ module knob(knobdia, len, knobrad)
 
 }
 
-module doorknob(lever = true, clear = 0.5)
+module doorknob(lever = true, clear = 0.5,hexonleft = false,metrisch = 4, styp = DIN7991, ntyp = "hex")
 {
   lhx = 4;
   lhz = 1.665;
@@ -70,10 +75,10 @@ module doorknob(lever = true, clear = 0.5)
   {
     union()
     {
-    beta =(size*360)/(2*PI*5*width);
+      beta =(size*360)/(2*PI*5*width);
       if(lever)
       {
-    //beta =asin(size/(2*5*width));
+        //beta =asin(size/(2*5*width));
         //translate([2*thick+2,0,(knobdia+thick)/2])
         translate([thick+2,0,(knobdia+thick)/2])
           rotate([0,-10,180])
@@ -87,59 +92,70 @@ module doorknob(lever = true, clear = 0.5)
           armlever(w= width*.6, thick=thick, angle=beta/3);
         translate([lhx,0,lhz*knobdia]) innerHinge(dia=12, w=0.9*width);
       }
+          flanschhoehe = max(0.8*knobdia,2*metrisch+4);
+          flanschbreite = max(width,4*metrisch+20);
+          flanschtiefe = max(4*thick,mschraubmass(styp,metrisch)[3]+mmuttermass(metrisch)[1]+2*clear+2*thick); 
+          stiefe = max(30,flanschtiefe+10);
+echo(str("act:",4*thick," vs ",flanschtiefe));
       difference()
       {
         union()
         {
           knob(knobdia+2*thick+2*luft, width,knobrad);
-          translate([0,0,-knobdia])
-            cube([4*thick,width,0.8*knobdia],center = true);
+          echo(str("flansch daten (",metrisch,") ",4*thick),width,flanschhoehe,flanschbreite);
+          translate([0,0,-knobdia-(flanschhoehe-0.8*knobdia)/2-metrisch*cos(30)/2])//flansch
+            cube([flanschtiefe,flanschbreite,flanschhoehe+metrisch*cos(30)],center = true);
           //cube([4*thick,knoblen/2,0.8*knobdia],center = true);
         }
         union()
         {
-          knob(knobdia+luft, knoblen+2,knobrad+2);
-         if(lever)
-         {
-           translate([-0.75*knobdia+clear,0,0])
-             cube([1.5*knobdia,knoblen+2,2*size],center = true);
-         }
-         else
-         {
-           translate([0.75*knobdia-clear,0,0])
-             cube([1.5*knobdia,knoblen+2,2*size],center = true);
-         }
-          //translate([-2*thick-.1,knoblen/8,-knobdia]) //on left side
-          translate([2*thick-3.3,knoblen/8,-knobdia])   //on right side
-            rotate([0,90,0])
-            metrische_mutter_schablone(4,30,  0.1);
-          //translate([-2*thick-.1,knoblen/8,-knobdia])
-          translate([2*thick-3.3,-knoblen/8,-knobdia])
-            rotate([0,90,0])
-            metrische_mutter_schablone(4,30,  0.1);
-          //translate([2*thick+2,knoblen/8,-knobdia])  //on left side
-          translate([-2*thick-0.1,knoblen/8,-knobdia]) //on right side
-            //rotate([0,-90,0])//on left side
-            rotate([0,90,0])
-            metrische_schraube_schablone(typ = DIN7991 , mass= 4,laenge = 30, toleranz = 0.1);
-          //translate([2*thick+2,-knoblen/8,-knobdia])
-          translate([-2*thick-.1,-knoblen/8,-knobdia])
-            //rotate([0,-90,0])
-            rotate([0,90,0])
-            metrische_schraube_schablone(typ = DIN7991 , mass= 4,laenge = 30, toleranz = 0.1);
+          knob(knobdia+luft, knoblen+2,2*knobrad);
+        if(lever)
+        {
+          translate([-0.75*knobdia+clear,0,0])
+            cube([1.5*knobdia,knoblen+2,2*size],center = true);
+        }
+        else
+        {
+          translate([0.75*knobdia-clear,0,0])
+            cube([1.5*knobdia,knoblen+2,2*size],center = true);
+        }
+          mittez =  -knobdia/2-flanschhoehe/2-metrisch*cos(30)/2;
+          //mittez =  -knobdia/2-flanschhoehe/2-metrisch*cos(30);
+          if(hexonleft)
+          {
+            if(ntyp == "hex")
+            {
+              translate([-flanschtiefe/2-.1,flanschbreite/4,mittez]) rotate([0,90,0]) metrische_mutter_schablone(metrisch,30, 0.1);
+              translate([-flanschtiefe/2-.1,-flanschbreite/4,mittez]) rotate([0,90,0]) metrische_mutter_schablone(metrisch,30, 0.1);
+            }
 
+            translate([flanschtiefe/2+2,flanschbreite/4,mittez]) rotate([0,-90,0]) metrische_schraube_schablone(typ = styp , mass= metrisch,laenge = stiefe, toleranz = 0.1);
+            translate([flanschtiefe/2+2,-flanschbreite/4,mittez]) rotate([0,-90,0]) metrische_schraube_schablone(typ = styp , mass= metrisch,laenge = stiefe, toleranz = 0.1);
+          }
+          else
+          {
+            if(ntyp == "hex")
+            {
+          //flanschtiefe = max(4*thick,mschraubmass(styp,metrisch)[3]+mmuttermass(metrisch)[1]+2*clear+2*thick); 
+            translate([flanschtiefe/2-0.9*mmuttermass(metrisch)[1],flanschbreite/4,mittez]) rotate([0,90,0]) metrische_mutter_schablone(metrisch,30,  0.1);
+            translate([flanschtiefe/2-0.9*mmuttermass(metrisch)[1],-flanschbreite/4,mittez]) rotate([0,90,0]) metrische_mutter_schablone(metrisch,30,  0.1);
+            }
+            translate([-flanschtiefe/2-0.1,flanschbreite/4,mittez])  rotate([0,90,0]) metrische_schraube_schablone(typ = styp , mass= metrisch,laenge = stiefe, toleranz = 0.1);
+            translate([-flanschtiefe/2-0.1,-flanschbreite/4,mittez]) rotate([0,90,0]) metrische_schraube_schablone(typ = styp , mass= metrisch,laenge = stiefe, toleranz = 0.1);
+          }
         }
       }
     }
     if(lever)
     {
-color("magenta")
-      translate([rhx,0,rhz*665*knobdia]) innerHinge(dia=12+clear, w=0.9*width);
+      color("magenta")
+        translate([rhx,0,rhz*665*knobdia]) innerHinge(dia=12+clear, w=0.9*width);
     }
     else
     {
-color("magenta")
-      translate([lhx,0,lhz*knobdia]) outerHinge(dia=12+clear, w=0.86*width);
+      color("magenta")
+        translate([lhx,0,lhz*knobdia]) outerHinge(dia=12+clear, w=0.86*width);
     }
   }
 }
@@ -161,12 +177,12 @@ module armlever(w, thick, angle = 40)
     ];
     cappoints = 
       [
-    [0,0],
-    [width-rund,0],
-    [width,-rund],
-    [width-thick,-rund-thick],
-    [width-thick-rund,-rund-thick],
-    [0,-rund-thick]
+      [0,0],
+      [width-rund,0],
+      [width,-rund],
+      [width-thick,-rund-thick],
+      [width-thick-rund,-rund-thick],
+      [0,-rund-thick]
       ];
 
       rotate([-90,0,0])
@@ -227,7 +243,7 @@ module innerHinge(dia = 12,w = 10)
 
   difference()
   {
-      translate([0,w/4,0])
+    translate([0,w/4,0])
       rotate([90,0,0])
       cylinder(d=dia+.1, h=w/2);
     translate([0,w/4+1,0])
