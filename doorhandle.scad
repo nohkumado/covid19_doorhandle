@@ -98,7 +98,7 @@ module doorknob(lever = true, clear = 0.5)
         }
         union()
         {
-          knob(knobdia+luft, knoblen+2,knobrad);
+          knob(knobdia+luft, knoblen+2,knobrad+2);
           if(lever)
           {
             translate([-0.75*knobdia+clear,0,0])
