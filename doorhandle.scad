@@ -99,27 +99,33 @@ module doorknob(lever = true, clear = 0.5)
         union()
         {
           knob(knobdia+luft, knoblen+2,knobrad+2);
-          if(lever)
-          {
-            translate([-0.75*knobdia+clear,0,0])
-              cube([1.5*knobdia,knoblen+2,2*size],center = true);
-          }
-          else
-          {
-            translate([0.75*knobdia-clear,0,0])
-              cube([1.5*knobdia,knoblen+2,2*size],center = true);
-          }
-          translate([2*thick-.1,knoblen/8,-knobdia])
+         if(lever)
+         {
+           translate([-0.75*knobdia+clear,0,0])
+             cube([1.5*knobdia,knoblen+2,2*size],center = true);
+         }
+         else
+         {
+           translate([0.75*knobdia-clear,0,0])
+             cube([1.5*knobdia,knoblen+2,2*size],center = true);
+         }
+          //translate([-2*thick-.1,knoblen/8,-knobdia]) //on left side
+          translate([2*thick-3.3,knoblen/8,-knobdia])   //on right side
             rotate([0,90,0])
             metrische_mutter_schablone(4,30,  0.1);
-          translate([2*thick-1,-knoblen/8,-knobdia])
+          //translate([-2*thick-.1,knoblen/8,-knobdia])
+          translate([2*thick-3.3,-knoblen/8,-knobdia])
             rotate([0,90,0])
             metrische_mutter_schablone(4,30,  0.1);
-          translate([-2*thick+2,knoblen/8,-knobdia])
-            rotate([0,-90,0])
+          //translate([2*thick+2,knoblen/8,-knobdia])  //on left side
+          translate([-2*thick-0.1,knoblen/8,-knobdia]) //on right side
+            //rotate([0,-90,0])//on left side
+            rotate([0,90,0])
             metrische_schraube_schablone(typ = DIN7991 , mass= 4,laenge = 30, toleranz = 0.1);
-          translate([-2*thick+2,-knoblen/8,-knobdia])
-            rotate([0,-90,0])
+          //translate([2*thick+2,-knoblen/8,-knobdia])
+          translate([-2*thick-.1,-knoblen/8,-knobdia])
+            //rotate([0,-90,0])
+            rotate([0,90,0])
             metrische_schraube_schablone(typ = DIN7991 , mass= 4,laenge = 30, toleranz = 0.1);
 
         }
