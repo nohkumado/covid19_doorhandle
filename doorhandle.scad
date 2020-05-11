@@ -28,7 +28,9 @@ knoblen = 135;
 // spacing between the jaws of the thing
 luft = 1;     
 // the mesure of the deviation from the straight line (together with the length its possible to compute the radius of the knb arc, e.g straigt = 0 , arc = 2.915
-hub = 0;
+hub = 2.9150;
+//angle with the knob
+fixangle = 30;
 //side on which the screws are
 screwonleft = true;
 //screws metric values!
@@ -50,44 +52,88 @@ alpha = (hub ==0) ? 0 : 4*(90-atan(knoblen/(2*hub)));
 //radius = knoblen /(2*sin(alpha));
 knobrad = radFromHub(knoblen,hub);
 //echo("rad = ",radius, "knobrad = ",knobrad, " beta = ",beta, " alpha = ",alpha);
-
+module toto() {}//stop function parsing for customizer
 $fn = 150;
 
+  rad2quader = sqrt(knobdia*knobdia/2)+luft;
+
+//quadrat shape
+//    myshape = [ 
+// [-rad2quader/2,-rad2quader/2], 
+// [rad2quader/2,-rad2quader/2], 
+// [rad2quader/2,+rad2quader/2], 
+// [-rad2quader/2,+rad2quader/2], 
+//    ];
+//F shape
+   myshape = [ 
+[-rad2quader/2,-rad2quader/2], 
+[-rad2quader/2 + 3,-rad2quader/2], 
+[-rad2quader/2 + 3,0], 
+[-rad2quader/2 + 6,0], 
+[-rad2quader/2 + 6,2], 
+[-rad2quader/2 + 3,2], 
+[-rad2quader/2+3 ,+rad2quader/2 -3], 
+[rad2quader/2,+rad2quader/2-3], 
+[rad2quader/2,+rad2quader/2], 
+[-rad2quader/2,+rad2quader/2], 
+   ];
 
 //lever side
-doorknob(lever = true, clear = 1,hexonleft = screwonleft, metrisch=screwsize,styp = type2index(screwtype), ntyp = nuttype, logo = addLogo)
-{
-   //put here the shape of your handlet will be diffed with  knob(knobdia+2*thick+2*luft, width,knobrad);
-   knob(knobdia+luft, knoblen+2,2*knobrad);
-}
+ doorknob(lever = true, clear = 1,hexonleft = screwonleft, metrisch=screwsize,styp = type2index(screwtype), ntyp = nuttype, logo = addLogo)
+ {
+    //put here the shape of your handlet will be diffed with  knob(knobdia, width,knobrad, thick = thick, outside = true);
+    knob(knobdia, knoblen,knobrad, thick = thick, outside = false, poly = myshape, angle = fixangle);
+    //cube([.8*knobdia, knoblen+2, .8*knobdia], center = true);
+ }
 
-//handle side
-doorknob(lever = false, clear = 1,hexonleft = screwonleft, metrisch=screwsize,styp = type2index(screwtype), ntyp = nuttype, logo = false)
-          knob(knobdia+luft, knoblen+2,2*knobrad);
+ //handle side
+ doorknob(lever = false, clear = 1,hexonleft = screwonleft, metrisch=screwsize,styp = type2index(screwtype), ntyp = nuttype, logo = false)
+           knob(knobdia, knoblen,knobrad, thick = thick, outside = false, poly = myshape, angle = fixangle);
+    //cube([.8*knobdia, knoblen+2, .8*knobdia], center = true);
+
+
+
+    //knob(knobdia, knoblen,knobrad, thick = thick, outside = false, poly = myshape);
 
 /*
    knob,
    if you have a special shape, add it here!
  */
-module knob(knobdia, len, knobrad)
+function adjDiam(diam, thick, luft, side) = (side)? diam+2*thick+2*luft : diam+luft;
+function adjLen(len, side) = (side)? len : len+2;
+function adjRad(rad, side) = (side)? rad : 2*rad;
+
+module knob(knobdia, len, knobrad, thick, outside = true, poly = [], angle = -70)
 {
+  //knob(knobdia+2*thick+2*luft, width,knobrad, thick = thick, outside = true);
   if(knobrad == 0)
   {
-    translate([0,len/2,0])
+    rotate([0,angle,0])//change here 90 for perfecly vertical, 90-20, to have enough space to go trough with the arm
+    translate([0,adjLen(len)/2,0])
       rotate([90,0,0])
-      cylinder(d=knobdia, h=len);
+      if(len(poly) >  0 &&!outside)
+{
+echo("found poly");
+      linear_extrude(height=len) polygon(poly);
+      //cylinder(d=adjDiam(knobdia,thick,luft,outside), h=len);
+}
+      else
+      cylinder(d=adjDiam(knobdia,thick,luft,outside), h=len);
   }
   else
   {
-    rotate([0,-70,0])//change here 90 for perfecly vertical, 90-20, to have enough space to go trough with the arm
-      translate([-knobrad,0,0])
+    rotate([0,angle,0])//change here 90 for perfecly vertical, 90-20, to have enough space to go trough with the arm
+      translate([-adjRad(knobrad,outside),0,0])
       rotate([0,0,-alpha/2])
       rotate_extrude(angle=alpha)
-      translate([knobrad,0,0])
-      circle(d=knobdia);
+      translate([adjRad(knobrad,outside),0,0])
+      if(len(poly) >  0 &&!outside)
+{
+      polygon(poly);
+}
+      else
+      circle(d=adjDiam(knobdia,thick,luft,outside));
   }
-
-
 }
 
 module doorknob(lever = true, clear = 0.5,hexonleft = false,metrisch = 4, styp = type2index("DIN7991"), ntyp = "hex", logo = true)
@@ -126,7 +172,7 @@ echo(str("act:",4*thick," vs ",flanschtiefe));
       {
         union()
         {
-          knob(knobdia+2*thick+2*luft, width,knobrad);
+          knob(knobdia, width,knobrad, thick = thick, outside = true);
           echo(str("flansch daten (",metrisch,") ",4*thick),width,flanschhoehe,flanschbreite);
           translate([0,0,-knobdia-(flanschhoehe-0.8*knobdia)/2-metrisch*cos(30)/2])//flansch
             cube([flanschtiefe,flanschbreite,flanschhoehe+metrisch*cos(30)],center = true);
